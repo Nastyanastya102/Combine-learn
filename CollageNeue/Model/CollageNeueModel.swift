@@ -30,6 +30,10 @@ class CollageNeueModel: ObservableObject {
 
   func add() {
     let newPhotos = selectedPhotosSubject
+      .prefix(while: { [unowned self] _ in
+        self.images.value.count < 6
+      })
+      .share()
 
     newPhotos
       .map { [unowned self] newImage in
@@ -44,7 +48,21 @@ class CollageNeueModel: ObservableObject {
   }
 
   func save() {
-    
+    guard let image = imagePreview else { return }
+
+    PhotoWriter.save(image)
+      .sink(
+        receiveCompletion: { [unowned self] completion in
+          if case .failure(let error) = completion {
+            lastErrorMessage = error.localizedDescription
+          }
+          clear()
+        },
+        receiveValue: { [unowned self] id in
+          lastSavedPhotoID = id
+        }
+      )
+      .store(in: &subscriptions)
   }
   
   // MARK: -  Displaying photos picker
