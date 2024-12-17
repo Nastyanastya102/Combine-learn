@@ -30,6 +30,7 @@ struct MainView: View {
         
         Button(action: {
           model.add()
+          isDisplayingPhotoPicker = true
         }, label: {
           Text("＋").font(.title)
         })

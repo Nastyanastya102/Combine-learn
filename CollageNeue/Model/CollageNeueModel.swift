@@ -14,6 +14,8 @@ class CollageNeueModel: ObservableObject {
   
   private(set) var lastSavedPhotoID = ""
   private(set) var lastErrorMessage = ""
+  private(set) var selectedPhotosSubject =
+    PassthroughSubject<UIImage, Never>()
 
   func bindMainView() {
     images
@@ -27,7 +29,14 @@ class CollageNeueModel: ObservableObject {
   }
 
   func add() {
-    images.value.append(UIImage(named: "IMG_1907")!)
+    let newPhotos = selectedPhotosSubject
+
+    newPhotos
+      .map { [unowned self] newImage in
+        return self.images.value + [newImage]
+      }
+      .assign(to: \.value, on: images)
+      .store(in: &subscriptions)
   }
 
   func clear() {
@@ -78,7 +87,7 @@ class CollageNeueModel: ObservableObject {
         return
       }
       
-      // Send the selected image
+      self.selectedPhotosSubject.send(image)
     }
   }
 }
