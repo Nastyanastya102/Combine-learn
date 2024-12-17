@@ -6,8 +6,10 @@ class CollageNeueModel: ObservableObject {
   static let collageSize = CGSize(width: UIScreen.main.bounds.width, height: 200)
   private var subscriptions = Set<AnyCancellable>()
   private let images = CurrentValueSubject<[UIImage], Never>([])
+  let updateUISubject = PassthroughSubject<Int, Never>()
   
   @Published var imagePreview: UIImage?
+ 
   // MARK: - Collage
   
   private(set) var lastSavedPhotoID = ""
@@ -15,6 +17,9 @@ class CollageNeueModel: ObservableObject {
 
   func bindMainView() {
     images
+      .handleEvents(receiveOutput: { [weak self] photos in
+        self?.updateUISubject.send(photos.count)
+      })
       .map { photos in
         UIImage.collage(images: photos, size: Self.collageSize)
       }
