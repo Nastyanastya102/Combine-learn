@@ -1,24 +1,32 @@
 import UIKit
 import Photos
+import Combine
 
 class CollageNeueModel: ObservableObject {
   static let collageSize = CGSize(width: UIScreen.main.bounds.width, height: 200)
+  private var subscriptions = Set<AnyCancellable>()
+  private let images = CurrentValueSubject<[UIImage], Never>([])
   
+  @Published var imagePreview: UIImage?
   // MARK: - Collage
   
   private(set) var lastSavedPhotoID = ""
   private(set) var lastErrorMessage = ""
 
   func bindMainView() {
-    
+    images
+      .map { photos in
+        UIImage.collage(images: photos, size: Self.collageSize)
+      }
+      .assign(to: &$imagePreview)
   }
 
   func add() {
-    
+    images.value.append(UIImage(named: "IMG_1907")!)
   }
 
   func clear() {
-    
+    images.send([])
   }
 
   func save() {
